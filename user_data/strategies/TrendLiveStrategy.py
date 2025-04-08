@@ -1019,10 +1019,6 @@ class TrendLiveStrategy(IStrategy):
                     ft_is_open=False,
                     order_id=order_id,
                 )
-                Trade.session.add(new_order)
-
-                # 更新交易状态
-                trade.recalc_open_trade_value()
 
                 # 调整最高/最低价记录
                 # 确保所有价格都已成功获取且有效 (非 None 且大于 0)
@@ -1047,8 +1043,12 @@ class TrendLiveStrategy(IStrategy):
                         f"'bid'({current_price_low}) 价格，跳过 adjust_min_max_rates。"
                     )
 
+                Trade.session.add(new_order)
+                Trade.session.commit()
+                # 更新交易状态
+                trade.recalc_trade_from_orders()
                 # 保存交易
-                Trade.session.commit()  # 如果需要手动提交，取消这行的注释
+                Trade.session.commit()
 
             except Exception as e:
                 # 回滚事务 - 不需要显式调用，因为 Freqtrade 会管理会话
