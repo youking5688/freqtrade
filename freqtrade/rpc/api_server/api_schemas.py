@@ -443,6 +443,11 @@ class DeleteTrade(BaseModel):
     trade_id: int
 
 
+class AdjustTrade(BaseModel):
+    tradeid: int
+    quantity: float
+
+
 class PlotConfig_(BaseModel):
     main_plot: dict[str, Any]
     subplots: dict[str, Any]

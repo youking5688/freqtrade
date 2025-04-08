@@ -1,6 +1,6 @@
 import logging
 from copy import deepcopy
-from typing import Annotated
+from typing import Annotated, no_type_check
 
 from fastapi import APIRouter, Depends, Query
 from fastapi.exceptions import HTTPException
@@ -12,6 +12,7 @@ from freqtrade.exceptions import OperationalException
 from freqtrade.rpc import RPC
 from freqtrade.rpc.api_server.api_pairlists import handleExchangePayload
 from freqtrade.rpc.api_server.api_schemas import (
+    AdjustTrade,
     AvailablePairs,
     Balances,
     BlacklistPayload,
@@ -211,6 +212,29 @@ def trade_cancel_open_order(tradeid: int, rpc: RPC = Depends(get_rpc)):
 def trade_reload(tradeid: int, rpc: RPC = Depends(get_rpc)):
     rpc._rpc_reload_trade_from_exchange(tradeid)
     return rpc._rpc_trade_status([tradeid])[0]
+
+
+@router.post("/adjust_position", tags=["info", "trading"])
+@no_type_check
+def adjust_position(request: AdjustTrade, rpc: RPC = Depends(get_rpc)):
+    try:
+        strategy = rpc._freqtrade.strategy
+        if not strategy:
+            raise HTTPException(status_code=500, detail="No active strategy found.")
+
+        # 检查策略是否支持该方法
+        if not hasattr(strategy, "custom_adjust_position"):
+            raise HTTPException(
+                status_code=400,
+                detail="Current strategy does not support manual position adjustment",
+            )
+
+        exchange = rpc._freqtrade.exchange
+        result = strategy.custom_adjust_position(request.tradeid, request.quantity, exchange)
+        return {"status": "success", "message": f"Position manual adjusted successfully: {result}"}
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to adjust position: {str(e)}")
 
 
 # TODO: Missing response model
