@@ -68,7 +68,7 @@ class TrendLiveStrategy(IStrategy):
     trailing_only_offset_is_reached = True  # 只有在达到一定盈利后才开始跟踪止损
 
     # 送进ICU的订单亏损阈值
-    icu_loss_threshold = -0.30
+    icu_loss_threshold = -0.10
     icu_time_threshold = 480
 
     # 定义超参数优化空间
