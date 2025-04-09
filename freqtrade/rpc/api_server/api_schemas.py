@@ -243,6 +243,7 @@ class ShowConfig(BaseModel):
     exit_pricing: dict[str, Any]
     entry_pricing: dict[str, Any]
     bot_name: str
+    icu_loss_threshold: float | None = None
     state: str
     runmode: str
     position_adjustment_enable: bool
